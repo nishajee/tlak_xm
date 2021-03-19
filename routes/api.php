@@ -172,5 +172,6 @@ Route::group(['namespace'=>'API'],function(){
         Route::post('refreshtoken', 'PassportUserController@refreshToken');
         Route::get('email/verify/{id}', 'VerificationApiController@verify')->name('verificationapi.verify');
         Route::get('email/resend', 'VerificationApiController@resend')->name('verificationapi.resend');
-       // ****** nisha************  
+       Route::post('forgotPassword','PassportUserController@forgotPassword');
+        // ****** nisha************  
     });

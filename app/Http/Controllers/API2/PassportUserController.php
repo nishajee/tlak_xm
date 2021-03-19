@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Validator;
 use Hash;
 use Mail;
+use Crypt;
 
 use App\PointOfInterest;
 use App\Location;
@@ -219,4 +220,61 @@ public function details()
         $result = json_decode((string) $response->getBody(), true);
         return response()->json($result, $this->successStatus);
     }
+
+
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'email' => 'required|email'
+        ]);
+        if($validator->fails()){
+            $message = $validator->errors()->all();
+            $status = [
+                'error' => true,
+                'message' => $message[0]
+            ];
+        return Response($status);
+        }
+
+        $user_mail = $request->email;
+        $user_data = User::where('email',$user_mail)
+                    ->first();
+        if($user_data){
+            $email_encrypt = Crypt::encryptString($user_mail);
+            $email_data = [
+                'email'=> $email_encrypt
+            ];
+
+           // $data = ['name'=>$tenant->name, 'email'=>$data['email'], 'company_name' => $tenant->company_name, 'company_id'=>$tenant->company_id, 'mob_no' => $tenant->phone, 'address_street'=> $tenant->address_street,'address_city' => $tenant->address_city,'address_zip' => $tenant->address_zip,'address_country' => $tenant->address_country,'company_website' => $tenant->company_website, 'referred_by'=>$tenant->referred_by];
+
+            Mail::send('emails.password_reset',$email_data,function($mail) use($request, $user_mail){
+                $mail->from('nishagroup777@gmail.com', 'Dook International');
+                $mail->to($user_mail)->subject("password reset");
+                $mail->cc('nishagroup777@gmail.com');
+            });
+            
+            // $mail_sent = Mail::send('emails.password_reset',$email_data,function($mail) use($request, $user_mail)
+            // {
+            //     $mail->from('nishagroup777@gmail.com', 'Dook International');
+            //     $mail->to($user_mail);
+            //     $mail->subject('Dook International- Agent Reset Password');
+            // });
+            $status = array(
+                'error' => false,
+                'user_type' => $user_data->user_type,
+                'message' => "Password recovery link has been mailed to you on registered email, Please check."
+            );
+        }
+        else{
+            $status = array(
+                'error' => false,
+                'user_type' => '',
+                'message' => "Your E-mail id does not exist please enter verify E-mail id.!"
+            );
+        }
+        return response()->json($status, 200);
+    }
+
+
 }

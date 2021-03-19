@@ -56,8 +56,9 @@ class VerificationApiController extends Controller
 
     if (!$user->hasVerifiedEmail()) {
         $user->markEmailAsVerified();
+        return response()->json(["msg" => "Mail Verified Successfully."], 200);
     }
-    return redirect()->to('/');
+    //return redirect()->to('/');
   
     }
 
